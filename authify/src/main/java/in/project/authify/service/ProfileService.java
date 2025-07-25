@@ -8,4 +8,6 @@ import org.springframework.stereotype.Service;
 public interface ProfileService {
 
    ProfileResponse createProfile(ProfileRequest request);
+
+   ProfileResponse getProfile(String email);
 }

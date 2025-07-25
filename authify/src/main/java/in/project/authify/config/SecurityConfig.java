@@ -1,6 +1,7 @@
 package in.project.authify.config;
 
 
+import in.project.authify.filter.JwtRequestFilter;
 import in.project.authify.service.AppUserDetailService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -31,6 +33,8 @@ import java.util.List;
 public class SecurityConfig {
 
     private final AppUserDetailService appUserDetailService;
+    private final JwtRequestFilter jwtRequestFilter;
+    private final CustomAuthenticationEntryPoint entryPoint;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -40,7 +44,10 @@ public class SecurityConfig {
                         .requestMatchers("/login", "/register", "/send-reset-otp", "/reset-password", "/logout")
                         .permitAll().anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .logout(AbstractHttpConfigurer::disable);
+                .logout(AbstractHttpConfigurer::disable)
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(ex->ex.authenticationEntryPoint(entryPoint));
+
         return http.build();
 
     }
